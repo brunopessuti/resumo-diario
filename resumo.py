@@ -27,7 +27,7 @@ import ssl
 NEWS_API_KEY       = os.environ["NEWS_API_KEY"]
 OPENWEATHER_KEY    = os.environ["OPENWEATHER_API_KEY"]
 GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
-EMAIL_DESTINO      = os.environ.get("EMAIL_DESTINO", "brunopessuti@gmail.com","nicolepres@gmail.com")
+EMAIL_DESTINO      = os.environ.get("EMAIL_DESTINO", "brunopessuti@gmail.com")
 
 CIDADE              = "Curitiba,BR"
 CIDADE_NOME         = "Curitiba"
@@ -335,8 +335,7 @@ def enviar_email(assunto, html_body):
     # ← Adicione ou remova e-mails nesta lista
     destinatarios = [
         EMAIL_DESTINO,
-        # "outro@email.com",
-        # "mais_um@email.com",
+        "nicolepres@gmail.com",
     ]
 
     msg = MIMEMultipart("alternative")
