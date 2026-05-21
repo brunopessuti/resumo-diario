@@ -1,11 +1,9 @@
 """
 resumo.py — Resumo Matinal Diário
-Busca notícias, clima e envia e-mail HTML formatado via Gmail API.
+Busca notícias, clima e envia e-mail HTML formatado via Gmail SMTP.
 
 Variáveis de ambiente necessárias (configurar como Secrets no GitHub):
-  GMAIL_CLIENT_ID
-  GMAIL_CLIENT_SECRET
-  GMAIL_REFRESH_TOKEN
+  GMAIL_APP_PASSWORD    (Senha de App gerada em myaccount.google.com/apppasswords)
   NEWS_API_KEY          (newsapi.org — plano gratuito)
   OPENWEATHER_API_KEY   (openweathermap.org — plano gratuito)
   EMAIL_DESTINO         (ex: brunopessuti@gmail.com)
@@ -15,23 +13,21 @@ import os
 import json
 import random
 import datetime
+import smtplib
 import urllib.request
 import urllib.parse
 import urllib.error
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import base64
 import ssl
 
 # ─────────────────────────────────────────────
 # CONFIGURAÇÃO
 # ─────────────────────────────────────────────
-NEWS_API_KEY        = os.environ["NEWS_API_KEY"]
-OPENWEATHER_KEY     = os.environ["OPENWEATHER_API_KEY"]
-GMAIL_CLIENT_ID     = os.environ["GMAIL_CLIENT_ID"]
-GMAIL_CLIENT_SECRET = os.environ["GMAIL_CLIENT_SECRET"]
-GMAIL_REFRESH_TOKEN = os.environ["GMAIL_REFRESH_TOKEN"]
-EMAIL_DESTINO       = os.environ.get("EMAIL_DESTINO", "brunopessuti@gmail.com")
+NEWS_API_KEY       = os.environ["NEWS_API_KEY"]
+OPENWEATHER_KEY    = os.environ["OPENWEATHER_API_KEY"]
+GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
+EMAIL_DESTINO      = os.environ.get("EMAIL_DESTINO", "brunopessuti@gmail.com")
 
 CIDADE              = "Curitiba,BR"
 CIDADE_NOME         = "Curitiba"
@@ -258,34 +254,19 @@ def montar_html(noticias, clima, cur_emoji, cur_texto, frase, autor):
 </body></html>"""
 
 # ─────────────────────────────────────────────
-# 6. GMAIL API
+# 6. ENVIO VIA SMTP (Senha de App do Gmail)
 # ─────────────────────────────────────────────
-def obter_access_token():
-    resp = post_json("https://oauth2.googleapis.com/token", {
-        "client_id":     GMAIL_CLIENT_ID,
-        "client_secret": GMAIL_CLIENT_SECRET,
-        "refresh_token": GMAIL_REFRESH_TOKEN,
-        "grant_type":    "refresh_token",
-    })
-    return resp["access_token"]
-
-def enviar_email(access_token, assunto, html_body):
+def enviar_email(assunto, html_body):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = assunto
     msg["From"]    = EMAIL_DESTINO
     msg["To"]      = EMAIL_DESTINO
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
-    payload = json.dumps({"raw": raw}).encode()
-    req = urllib.request.Request(
-        "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
-        data=payload,
-        headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, context=ctx, timeout=20) as r:
-        return json.loads(r.read().decode())
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
+        servidor.login(EMAIL_DESTINO, GMAIL_APP_PASSWORD)
+        servidor.sendmail(EMAIL_DESTINO, EMAIL_DESTINO, msg.as_string())
+        print("✅ E-mail enviado com sucesso!")
 
 # ─────────────────────────────────────────────
 # MAIN
@@ -310,15 +291,11 @@ def main():
     frase, autor = mensagem_motivacional()
 
     print("✉️  Montando e-mail HTML...")
-    html   = montar_html(noticias, clima, cur_emoji, cur_texto, frase, autor)
+    html    = montar_html(noticias, clima, cur_emoji, cur_texto, frase, autor)
     assunto = f"☀️ Bom Dia, Bruno! Resumo Matinal — {data_fmt}"
 
-    print("🔑 Obtendo token de acesso Gmail...")
-    token = obter_access_token()
-
-    print("📤 Enviando e-mail...")
-    resultado = enviar_email(token, assunto, html)
-    print(f"✅ E-mail enviado com sucesso! ID: {resultado.get('id', '???')}")
+    print("📤 Enviando e-mail via SMTP...")
+    enviar_email(assunto, html)
 
 if __name__ == "__main__":
     main()
