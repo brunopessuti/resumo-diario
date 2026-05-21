@@ -26,10 +26,8 @@ jobs:
 
       - name: ☀️ Executar resumo matinal
         env:
-          NEWS_API_KEY:          ${{ secrets.NEWS_API_KEY }}
-          OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
-          GMAIL_CLIENT_ID:       ${{ secrets.GMAIL_CLIENT_ID }}
-          GMAIL_CLIENT_SECRET:   ${{ secrets.GMAIL_CLIENT_SECRET }}
-          GMAIL_REFRESH_TOKEN:   ${{ secrets.GMAIL_REFRESH_TOKEN }}
-          EMAIL_DESTINO:         brunopessuti@gmail.com
+          NEWS_API_KEY:        ${{ secrets.NEWS_API_KEY }}
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          EMAIL_DESTINO:       brunopessuti@gmail.com
         run: python resumo.py
