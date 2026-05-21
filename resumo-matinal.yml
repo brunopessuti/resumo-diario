@@ -1,0 +1,35 @@
+name: ☀️ Resumo Matinal Diário
+
+on:
+  schedule:
+    # 07:00 BRT (Brasília) = 10:00 UTC
+    # Formato cron: minuto hora dia mês dia-da-semana
+    - cron: '0 10 * * 1-5'   # Segunda a Sexta
+    # Para incluir fins de semana, troque '1-5' por '*'
+
+  # Permite rodar manualmente pelo site do GitHub (Actions → Run workflow)
+  workflow_dispatch:
+
+jobs:
+  enviar-resumo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Baixar código
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: ☀️ Executar resumo matinal
+        env:
+          NEWS_API_KEY:          ${{ secrets.NEWS_API_KEY }}
+          OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
+          GMAIL_CLIENT_ID:       ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET:   ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN:   ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          EMAIL_DESTINO:         brunopessuti@gmail.com
+        run: python resumo.py
