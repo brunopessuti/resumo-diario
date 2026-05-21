@@ -50,8 +50,14 @@ def get_json(url, headers=None):
 def post_json(url, data, headers=None):
     body = urllib.parse.urlencode(data).encode()
     req = urllib.request.Request(url, data=body, headers=headers or {})
-    with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
-        return json.loads(r.read().decode())
+    try:
+        with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
+            return json.loads(r.read().decode())
+    except urllib.error.HTTPError as e:
+        erro_body = e.read().decode()
+        print(f"❌ HTTP {e.code} em {url}")
+        print(f"   Resposta do servidor: {erro_body}")
+        raise
 
 # ─────────────────────────────────────────────
 # 1. NOTÍCIAS
