@@ -61,16 +61,16 @@ def buscar_noticias():
     ontem = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
 
     # /v2/everything funciona no plano gratuito da NewsAPI
-    url = (
-        "https://newsapi.org/v2/everything"
-        f"?q=Brasil+OR+mundo+OR+economia+OR+política"
-        f"&language=pt"
-        f"&from={ontem}"
-        f"&to={hoje}"
-        f"&sortBy=publishedAt"
-        f"&pageSize=5"
-        f"&apiKey={NEWS_API_KEY}"
-    )
+    params = urllib.parse.urlencode({
+        "q":        "Brasil OR mundo OR economia OR politica",
+        "language": "pt",
+        "from":     ontem,
+        "to":       hoje,
+        "sortBy":   "publishedAt",
+        "pageSize": 5,
+        "apiKey":   NEWS_API_KEY,
+    })
+    url = f"https://newsapi.org/v2/everything?{params}"
     dados = get_json(url)
     artigos = dados.get("articles", [])
 
