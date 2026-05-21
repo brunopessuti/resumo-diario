@@ -57,9 +57,17 @@ def post_json(url, data, headers=None):
 # 1. NOTÍCIAS
 # ─────────────────────────────────────────────
 def buscar_noticias():
+    hoje = datetime.date.today().isoformat()
+    ontem = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
+
+    # /v2/everything funciona no plano gratuito da NewsAPI
     url = (
-        "https://newsapi.org/v2/top-headlines"
-        f"?country={PAIS_NOTICIAS}"
+        "https://newsapi.org/v2/everything"
+        f"?q=Brasil+OR+mundo+OR+economia+OR+política"
+        f"&language=pt"
+        f"&from={ontem}"
+        f"&to={hoje}"
+        f"&sortBy=publishedAt"
         f"&pageSize=5"
         f"&apiKey={NEWS_API_KEY}"
     )
@@ -68,13 +76,18 @@ def buscar_noticias():
 
     noticias = []
     for a in artigos[:5]:
+        titulo = a.get("title", "") or ""
+        # Remove sufixo " - Nome do Veículo" do título
+        titulo = titulo.split(" - ")[0].strip()
+        if not titulo or titulo == "[Removed]":
+            continue
         noticias.append({
-            "titulo":   a.get("title", "").split(" - ")[0].strip(),
+            "titulo":    titulo,
             "descricao": a.get("description") or "",
-            "fonte":    a.get("source", {}).get("name", ""),
-            "url":      a.get("url", ""),
+            "fonte":     a.get("source", {}).get("name", ""),
+            "url":       a.get("url", ""),
         })
-    return noticias
+    return noticias[:5]
 
 # ─────────────────────────────────────────────
 # 2. CLIMA
