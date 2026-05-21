@@ -1,0 +1,6 @@
+# Sem dependências externas!
+# O script usa apenas bibliotecas padrão do Python 3.x:
+#   urllib, json, ssl, email, base64, random, datetime, os
+#
+# Isso torna o deploy no GitHub Actions mais rápido
+# (não precisa de pip install).
