@@ -257,16 +257,23 @@ def montar_html(noticias, clima, cur_emoji, cur_texto, frase, autor):
 # 6. ENVIO VIA SMTP (Senha de App do Gmail)
 # ─────────────────────────────────────────────
 def enviar_email(assunto, html_body):
+    # ← Adicione ou remova e-mails nesta lista
+    destinatarios = [
+        EMAIL_DESTINO,
+        # "outro@email.com",
+        # "mais_um@email.com",
+    ]
+
     msg = MIMEMultipart("alternative")
     msg["Subject"] = assunto
     msg["From"]    = EMAIL_DESTINO
-    msg["To"]      = EMAIL_DESTINO
+    msg["To"]      = ", ".join(destinatarios)
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidor:
         servidor.login(EMAIL_DESTINO, GMAIL_APP_PASSWORD)
-        servidor.sendmail(EMAIL_DESTINO, EMAIL_DESTINO, msg.as_string())
-        print("✅ E-mail enviado com sucesso!")
+        servidor.sendmail(EMAIL_DESTINO, destinatarios, msg.as_string())
+        print(f"✅ E-mail enviado para: {', '.join(destinatarios)}")
 
 # ─────────────────────────────────────────────
 # MAIN
